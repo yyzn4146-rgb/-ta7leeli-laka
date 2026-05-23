@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحليلي | Ta7leeli - قارئ التحاليل الذكي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+    <style>
+        :root {
+            --dark-1: #052A3D;
+            --dark-2: #0a3d5c;
+            --primary: #117192;
+            --accent: #19D1E6;
+            --warm: #614943;
+            --light: #B3CDD7;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: linear-gradient(135deg, var(--dark-1) 0%, #0a1f2e 50%, var(--dark-1) 100%);
+            min-height: 100vh;
+            color: var(--light);
+            overflow-x: hidden;
+        }
+
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .header {
+            position: relative;
+            z-index: 10;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(20px);
+            background: rgba(5, 42, 61, 0.6);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            box-shadow: 0 8px 32px rgba(25, 209, 230, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-icon::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .logo-text h1 {
+            font-size: 28px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent), var(--light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-text span {
+            font-size: 14px;
+            color: var(--primary);
+            font-weight: 500;
+            letter-spacing: 3px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--light);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            right: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            transition: width 0.3s;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .main-container {
+            position: relative;
+            z-index: 5;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 60px 20px;
+            margin-bottom: 50px;
+        }
+
+        .hero h2 {
+            font-size: 52px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--light), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.3;
+        }
+
+        .hero p {
+            font-size: 20px;
+            color: var(--light);
+            opacity: 0.8;
+            max-width: 600px;
+            margin: 0 auto 40px;
+            line-height: 1.8;
+        }
+
+        .upload-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .upload-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.4s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--primary));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .upload-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(25, 209, 230, 0.15);
+            border-color: rgba(25, 209, 230, 0.3);
+        }
+
+        .upload-card:hover::before {
+            opacity: 1;
+        }
+
+        .upload-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, rgba(25, 209, 230, 0.2), rgba(17, 113, 146, 0.2));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 36px;
+            color: var(--accent);
+            border: 2px solid rgba(25, 209, 230, 0.3);
+            transition: all 0.3s;
+        }
+
+        .upload-card:hover .upload-icon {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(25, 209, 230, 0.4);
+        }
+
+        .upload-card h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: white;
+        }
+
+        .upload-card p {
+            color: var(--light);
+            opacity: 0.7;
+            font-size: 15px;
+        }
+
+        .upload-card input {
+            display: none;
+        }
+
+        .manual-section {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px;
+            margin-bottom: 50px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .section-header h3 {
+            font-size: 28px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section-header h3 i {
+            color: var(--accent);
+        }
+
+        .search-box {
+            position: relative;
+            width: 300px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 45px 12px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: var(--light);
+            font-family: 'Tajawal', sans-serif;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(25, 209, 230, 0.1);
+        }
+
+        .search-box i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary);
+        }
+
+        .tests-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .test-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .test-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateY(-3px);
+        }
+
+        .test-card.status-normal { border-right: 3px solid #2ecc71; }
+        .test-card.status-warning { border-right: 3px solid #f39c12; }
+        .test-card.status-danger { border-right: 3px solid #e74c3c; }
+
+        .test-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .test-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .test-unit {
+            font-size: 13px;
+            color: var(--primary);
+            background: rgba(17, 113, 146, 0.2);
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .test-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .test-input-group input {
+            flex: 1;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            color: white;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .test-input-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .test-input-group input.status-normal { border-color: #2ecc71; background: rgba(46, 204, 113, 0.1); }
+        .test-input-group input.status-warning { border-color: #f39c12; background: rgba(243, 156, 18, 0.1); }
+        .test-input-group input.status-danger { border-color: #e74c3c; background: rgba(231, 76, 60, 0.1); }
+
+        .range-info {
+            font-size: 13px;
+            color: var(--light);
+            opacity: 0.6;
+            margin-bottom: 10px;
+        }
+
+        .test-result {
+            display: none;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .test-result.show { display: block; }
+        .test-result.normal { background: rgba(46, 204, 113, 0.1); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.3); }
+        .test-result.warning { background: rgba(243, 156, 18, 0.1); color: #f39c12; border: 1px solid rgba(243, 156, 18, 0.3); }
+        .test-result.danger { background: rgba(231, 76, 60, 0.1); color: #e74c3c; border: 1px solid rgba(231, 76, 60, 0.3); }
+
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 3px;
+            transition: all 0.5s ease;
+            position: relative;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 20px;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3));
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-20px); }
+            100% { transform: translateX(20px); }
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            border: none;
+            border-radius: 14px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+            color: white;
+            box-shadow: 0 10px 30px rgba(25, 209, 230, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(25, 209, 230, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--light);
+            border: 1px solid var(--glass-border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent);
+        }
+
+        .btn-warm {
+            background: linear-gradient(135deg, var(--warm), #8b6914);
+            color: white;
+            box-shadow: 0 10px 30px rgba(97, 73, 67, 0.3);
+        }
+
+        .btn-warm:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(97, 73, 67, 0.4);
+        }
+
+        .results-section {
+            display: none;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px;
+            margin-bottom: 50px;
+        }
+
+        .results-section.show {
+            display: block;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .results-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .results-header h3 {
+            font-size: 32px;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 25px;
+            text-align: center;
+            border: 1px solid var(--glass-border);
+        }
+
+        .summary-card i { font-size: 36px; margin-bottom: 10px; }
+        .summary-card.normal i { color: #2ecc71; }
+        .summary-card.warning i { color: #f39c12; }
+        .summary-card.danger i { color: #e74c3c; }
+
+        .summary-card .number {
+            font-size: 36px;
+            font-weight: 900;
+            color: white;
+        }
+
+        .summary-card .label {
+            font-size: 14px;
+            color: var(--light);
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .tips-section {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .tips-section h4 {
+            color: var(--accent);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tip-item {
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-right: 3px solid var(--accent);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 40px;
+            border-top: 1px solid var(--glass-border);
+            margin-top: 50px;
+            position: relative;
+            z-index: 5;
+        }
+
+        .footer p {
+            color: var(--light);
+            opacity: 0.5;
+            font-size: 14px;
+        }
+
+        .footer .warning {
+            color: var(--warm);
+            margin-top: 10px;
+            font-weight: 500;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal.show { display: flex; }
+
+        .modal-content {
+            background: linear-gradient(135deg, var(--dark-1), var(--dark-2));
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+        }
+
+        .modal-content h3 {
+            font-size: 24px;
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .modal-content p {
+            color: var(--light);
+            opacity: 0.8;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: none;
+            border: none;
+            color: var(--light);
+            font-size: 24px;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .close-modal:hover { color: var(--accent); }
+
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 42, 61, 0.95);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .loading.show { display: flex; }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(25, 209, 230, 0.1);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading p {
+            color: var(--accent);
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .upload-section { grid-template-columns: 1fr; }
+            .tests-grid { grid-template-columns: 1fr; }
+            .summary-cards { grid-template-columns: 1fr; }
+            .hero h2 { font-size: 32px; }
+            .header { flex-direction: column; gap: 20px; }
+            .nav-links { gap: 15px; }
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--dark-1); }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+    </style>
+</head>
+<body>
+    <canvas id="particles-canvas"></canvas>
+
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">
+                <i class="fas fa-microscope"></i>
+            </div>
+            <div class="logo-text">
+                <h1>تحليلي</h1>
+                <span>TA7LEELI</span>
+            </div>
+        </div>
+        <nav class="nav-links">
+            <a href="#upload"><i class="fas fa-upload"></i> رفع التحليل</a>
+            <a href="#manual"><i class="fas fa-keyboard"></i> إدخال يدوي</a>
+            <a href="#results"><i class="fas fa-chart-bar"></i> النتائج</a>
+            <a href="#about"><i class="fas fa-info-circle"></i> عن الموقع</a>
+        </nav>
+    </header>
+
+    <main class="main-container">
+        <section class="hero">
+            <h2>قارئ التحاليل الطبية الذكي</h2>
+            <p>حلل نتائج تحاليلك بذكاء، قارنها بالنطاقات الطبيعية العالمية، واحصل على نصائح مخصصة - كل ذلك بأمان وخصوصية تامة</p>
+        </section>
+
+        <section class="upload-section" id="upload">
+            <div class="upload-card" onclick="document.getElementById('imageInput').click()">
+                <div class="upload-icon">
+                    <i class="fas fa-camera"></i>
+                </div>
+                <h3>رفع صورة التحليل</h3>
+                <p>التقط صورة واضحة للتحليل وسنقوم بقراءتها تلقائياً</p>
+                <input type="file" id="imageInput" accept="image/*" onchange="handleImageUpload(event)">
+            </div>
+
+            <div class="upload-card" onclick="document.getElementById('pdfInput').click()">
+                <div class="upload-icon">
+                    <i class="fas fa-file-pdf"></i>
+                </div>
+                <h3>رفع ملف PDF</h3>
+                <p>ارفع ملف PDF الخاص بالتحليل لاستخراج البيانات</p>
+                <input type="file" id="pdfInput" accept=".pdf" onchange="handlePdfUpload(event)">
+            </div>
+        </section>
+
+        <section class="manual-section" id="manual">
+            <div class="section-header">
+                <h3><i class="fas fa-vials"></i> إدخال النتائج يدوياً</h3>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchTests" placeholder="ابحث عن تحليل..." onkeyup="searchTests()">
+                </div>
+            </div>
+
+            <div class="tests-grid" id="testsGrid"></div>
+
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="analyzeResults()">
+                    <i class="fas fa-brain"></i> تحليل النتائج
+                </button>
+                <button class="btn btn-secondary" onclick="clearAll()">
+                    <i class="fas fa-trash-alt"></i> مسح الكل
+                </button>
+                <button class="btn btn-warm" onclick="exportReport()">
+                    <i class="fas fa-file-export"></i> تصدير التقرير
+                </button>
+            </div>
+        </section>
+
+        <section class="results-section" id="results">
+            <div class="results-header">
+                <h3><i class="fas fa-clipboard-check"></i> نتائج التحليل</h3>
+                <p style="color: var(--light); opacity: 0.7;">ملخص شامل لنتائج تحاليلك</p>
+            </div>
+
+            <div class="summary-cards">
+                <div class="summary-card normal">
+                    <i class="fas fa-check-circle"></i>
+                    <div class="number" id="normalCount">0</div>
+                    <div class="label">طبيعي</div>
+                </div>
+                <div class="summary-card warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div class="number" id="warningCount">0</div>
+                    <div class="label">يحتاج مراقبة</div>
+                </div>
+                <div class="summary-card danger">
+                    <i class="fas fa-times-circle"></i>
+                    <div class="number" id="dangerCount">0</div>
+                    <div class="label">مراجعة طبية</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="resultsChart"></canvas>
+            </div>
+
+            <div class="tips-section" id="tipsSection">
+                <h4><i class="fas fa-lightbulb"></i> نصائح وتوصيات</h4>
+                <div id="tipsList"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>تحليلي | Ta7leeli - قارئ التحاليل الذكي</p>
+        <p class="warning">
+            <i class="fas fa-exclamation-circle"></i>
+            هذا الموقع لا يغني عن استشارة الطبيب المختص. النتائج تعتبر إرشادية فقط.
+        </p>
+    </footer>
+
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+            <h3 id="modalTitle">عنوان</h3>
+            <p id="modalText">نص الرسالة</p>
+            <button class="btn btn-primary" onclick="closeModal()">حسناً</button>
+        </div>
+    </div>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>جاري التحليل...</p>
+    </div>
+
+    <script>
+        // Particles Background
+        const canvas = document.getElementById('particles-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const particles = [];
+        for (let i = 0; i < 50; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: Math.random() * 2 + 1,
+                speedX: (Math.random() - 0.5) * 0.5,
+                speedY: (Math.random() - 0.5) * 0.5,
+                opacity: Math.random() * 0.5 + 0.1
+            });
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(25, 209, 230, ${p.opacity})`;
+                ctx.fill();
+                p.x += p.speedX;
+                p.y += p.speedY;
+                if (p.x < 0 || p.x > canvas.width) p.speedX *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.speedY *= -1;
+            });
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Test Database
+        const testsDB = [
+            { id: 'wbc', name: 'كريات الدم البيضاء (WBC)', unit: '×10³/μL', min: 4.0, max: 11.0, category: 'CBC', tips: { high: 'قد يشير إلى عدوى أو التهاب. أنصح بمراجعة الطبيب.', low: 'قد يشير إلى ضعف في المناعة. يفضل مراجعة الطبيب.' } },
+            { id: 'rbc', name: 'كريات الدم الحمراء (RBC)', unit: '×10⁶/μL', min: 4.5, max: 5.5, category: 'CBC', tips: { high: 'قد يشير إلى جفاف أو مرض رئوي. استشر الطبيب.', low: 'قد يشير إلى فقر دم. يفضل تناول أطعمة غنية بالحديد.' } },
+            { id: 'hgb', name: 'الهيموجلوبين (Hgb)', unit: 'g/dL', min: 13.5, max: 17.5, category: 'CBC', tips: { high: 'قد يشير إلى جفاف. شرب الماء بكثرة مهم.', low: 'فقر دم محتمل. تناول سبانخ، لحوم حمراء، وفوليك أسيد.' } },
+            { id: 'hct', name: 'الهيماتوكريت (HCT)', unit: '%', min: 38.0, max: 50.0, category: 'CBC', tips: { high: 'ارتفاع في نسبة الدم. تأكد من شرب كميات كافية من الماء.', low: 'قد يشير إلى فقر دم أو نزيف. مراجعة الطبيب ضرورية.' } },
+            { id: 'plt', name: 'الصفائح الدموية (PLT)', unit: '×10³/μL', min: 150, max: 450, category: 'CBC', tips: { high: 'قد يشير إلى التهاب أو نقص حديد. استشر الطبيب.', low: 'خطر نزيف مرتفع. تجنب الكدمات ومراجعة الطبيب فوراً.' } },
+            { id: 'glucose', name: 'السكر الصيامي (FBS)', unit: 'mg/dL', min: 70, max: 100, category: 'السكر', tips: { high: 'قد يشير إلى سكري أو مقاومة أنسولين. راجع طبيبك وقلل السكريات.', low: 'انخفاض السكر. تناول وجبة خفيفة تحتوي على كربوهيدرات.' } },
+            { id: 'hba1c', name: 'السكر التراكمي (HbA1c)', unit: '%', min: 4.0, max: 5.7, category: 'السكر', tips: { high: 'سكري محتمل. ممارسة الرياضة ونظام غذائي صحي ضروريان.', low: 'نادر. قد يشير إلى فقر دم. استشر الطبيب.' } },
+            { id: 'creatinine', name: 'الكرياتينين (Creatinine)', unit: 'mg/dL', min: 0.7, max: 1.3, category: 'الكلى', tips: { high: 'قد يشير إلى ضعف في وظائف الكلى. شرب الماء بكثرة مهم.', low: 'نادر. قد يشير إلى نقص كتلة عضلية.' } },
+            { id: 'urea', name: 'اليوريا (Urea)', unit: 'mg/dL', min: 7, max: 20, category: 'الكلى', tips: { high: 'قد يشير إلى جفاف أو مشاكل في الكلى. شرب الماء بكثرة.', low: 'نادر. قد يشير إلى مشاكل في الكبد.' } },
+            { id: 'alt', name: 'إنزيم ALT', unit: 'U/L', min: 7, max: 56, category: 'الكبد', tips: { high: 'قد يشير إلى التهاب كبدي. تجنب الكحول والدهون.', low: 'نادر. عادة لا يشكل خطراً.' } },
+            { id: 'ast', name: 'إنزيم AST', unit: 'U/L', min: 10, max: 40, category: 'الكبد', tips: { high: 'قد يشير إلى مشاكل في الكبد أو القلب. استشر الطبيب.', low: 'نادر. عادة لا يشكل خطراً.' } },
+            { id: 'alp', name: 'إنزيم ALP', unit: 'U/L', min: 44, max: 147, category: 'الكبد', tips: { high: 'قد يشير إلى مشاكل في المرارة أو الكبد. استشر الطبيب.', low: 'نادر. قد يشير إلى نقص فيتامين B6 أو الزنك.' } },
+            { id: 'bilirubin', name: 'البليروبين الكلي', unit: 'mg/dL', min: 0.1, max: 1.2, category: 'الكبد', tips: { high: 'قد يشير إلى اليرقان. استشر الطبيب فوراً.', low: 'لا يشكل خطراً عادة.' } },
+            { id: 'total_chol', name: 'الكوليسترول الكلي', unit: 'mg/dL', min: 0, max: 200, category: 'الدهون', tips: { high: 'ارتفاع الكوليسترول. قلل الدهون المشبعة وممارس الرياضة.', low: 'نادر. قد يشير إلى مشاكل صحية أخرى.' } },
+            { id: 'ldl', name: 'الكوليسترول الضار (LDL)', unit: 'mg/dL', min: 0, max: 100, category: 'الدهون', tips: { high: 'خطر أمراض قلب. تناول أطعمة غنية بالألياف وقلل الدهون.', low: 'ممتاز! استمر على نمط حياتك الصحي.' } },
+            { id: 'hdl', name: 'الكوليسترول النافع (HDL)', unit: 'mg/dL', min: 40, max: 1000, category: 'الدهون', tips: { high: 'ممتاز! HDL مرتفع يحمي القلب.', low: 'HDL منخفض. مارس الرياضة وتناول سمك وزيت زيتون.' } },
+            { id: 'triglycerides', name: 'الدهون الثلاثية (TG)', unit: 'mg/dL', min: 0, max: 150, category: 'الدهون', tips: { high: 'ارتفاع الدهون الثلاثية. قلل السكريات والكربوهيدرات المكررة.', low: 'ممتاز! استمر على نمط حياتك الصحي.' } },
+            { id: 'uric_acid', name: 'حمض البوليك', unit: 'mg/dL', min: 3.5, max: 7.2, category: 'أخرى', tips: { high: 'خطر النقرس. قلل اللحوم الحمراء والمأكولات البحرية.', low: 'نادر. عادة لا يشكل خطراً.' } },
+            { id: 'sodium', name: 'الصوديوم (Na)', unit: 'mEq/L', min: 135, max: 145, category: 'أخرى', tips: { high: 'قد يشير إلى جفاف. شرب الماء بكثرة.', low: 'نقص صوديوم. تجنب الملح الزائد واستشر الطبيب.' } },
+            { id: 'potassium', name: 'البوتاسيوم (K)', unit: 'mEq/L', min: 3.5, max: 5.0, category: 'أخرى', tips: { high: 'قد يؤثر على القلب. استشر الطبيب فوراً.', low: 'نقص بوتاسيوم. تناول موز، أفوكادو، وسبانخ.' } },
+            { id: 'calcium', name: 'الكالسيوم (Ca)', unit: 'mg/dL', min: 8.5, max: 10.5, category: 'أخرى', tips: { high: 'قد يشير إلى مشاكل في الغدة جار درقية.', low: 'نقص كالسيوم. تناول منتجات الألبان والخضروات الورقية.' } },
+            { id: 'vitamin_d', name: 'فيتامين D', unit: 'ng/mL', min: 30, max: 100, category: 'الفيتامينات', tips: { high: 'نادر. قد يشير إلى زيادة فيتامين D.', low: 'نقص فيتامين D شائع. تعرض لأشعة الشمس وتناول مكملات.' } },
+            { id: 'vitamin_b12', name: 'فيتامين B12', unit: 'pg/mL', min: 200, max: 900, category: 'الفيتامينات', tips: { high: 'نادر. عادة لا يشكل خطراً.', low: 'نقص B12. تناول لحوم، سمك، وبيض أو مكملات.' } },
+            { id: 'ferritin', name: 'الفيريتين (Ferritin)', unit: 'ng/mL', min: 30, max: 400, category: 'الحديد', tips: { high: 'قد يشير إلى زيادة حديد أو التهاب. استشر الطبيب.', low: 'نقص حديد. تناول لحوم حمراء وسبانخ مع فيتامين C.' } },
+            { id: 'tsh', name: 'الهرمون المحفز للدرقية (TSH)', unit: 'μIU/mL', min: 0.4, max: 4.0, category: 'الهرمونات', tips: { high: 'قصور درقي محتمل. استشر طبيب الغدد.', low: 'فرط درقي محتمل. استشر طبيب الغدد.' } },
+            { id: 't3', name: 'T3', unit: 'pg/mL', min: 2.3, max: 4.2, category: 'الهرمونات', tips: { high: 'فرط درقي. استشر طبيب الغدد.', low: 'قصور درقي. استشر طبيب الغدد.' } },
+            { id: 't4', name: 'T4', unit: 'μg/dL', min: 0.8, max: 1.8, category: 'الهرمونات', tips: { high: 'فرط درقي. استشر طبيب الغدد.', low: 'قصور درقي. استشر طبيب الغدد.' } },
+            { id: 'psa', name: 'PSA (للرجال)', unit: 'ng/mL', min: 0, max: 4.0, category: 'أخرى', tips: { high: 'قد يشير إلى تضخم البروستاتا. استشر طبيب المسالك.', low: 'طبيعي. استمر على الفحوصات الدورية.' } },
+            { id: 'crp', name: 'بروتين C التفاعلي (CRP)', unit: 'mg/L', min: 0, max: 10, category: 'الالتهابات', tips: { high: 'التهاب في الجسم. استشر الطبيب لمعرفة السبب.', low: 'لا يوجد التهاب. ممتاز!' } },
+            { id: 'esr', name: 'معدل الترسيب (ESR)', unit: 'mm/hr', min: 0, max: 20, category: 'الالتهابات', tips: { high: 'التهاب أو عدوى مزمنة. استشر الطبيب.', low: 'طبيعي. لا يوجد التهاب ظاهر.' } },
+            { id: 'ggt', name: 'إنزيم GGT', unit: 'U/L', min: 9, max: 48, category: 'الكبد', tips: { high: 'قد يشير إلى مشاكل في الكبد أو المرارة. استشر الطبيب.', low: 'نادر. عادة لا يشكل خطراً.' } },
+            { id: 'albumin', name: 'الألبومين (Albumin)', unit: 'g/dL', min: 3.5, max: 5.0, category: 'الكبد', tips: { high: 'نادر. قد يشير إلى جفاف.', low: 'قد يشير إلى مشاكل في الكبد أو الكلى أو سوء تغذية.' } },
+            { id: 'total_protein', name: 'البروتين الكلي', unit: 'g/dL', min: 6.0, max: 8.3, category: 'الكبد', tips: { high: 'قد يشير إلى جفاف أو أمراض المناعة.', low: 'قد يشير إلى سوء تغذية أو مشاكل في الكبد أو الكلى.' } },
+            { id: 'iron', name: 'الحديد (Iron)', unit: 'μg/dL', min: 60, max: 170, category: 'الحديد', tips: { high: 'قد يشير إلى زيادة حديد. استشر الطبيب.', low: 'نقص حديد. تناول لحوم حمراء وسبانخ مع فيتامين C.' } },
+            { id: 'transferrin', name: 'الترانسفيرين', unit: 'mg/dL', min: 200, max: 360, category: 'الحديد', tips: { high: 'قد يشير إلى نقص حديد.', low: 'قد يشير إلى زيادة حديد أو التهاب.' } },
+            { id: 'magnesium', name: 'المغنيسيوم (Mg)', unit: 'mg/dL', min: 1.7, max: 2.2, category: 'أخرى', tips: { high: 'نادر. قد يشير إلى مشاكل في الكلى.', low: 'نقص مغنيسيوم شائع. تناول مكسرات، بذور، وشوكولاتة داكنة.' } },
+            { id: 'phosphorus', name: 'الفوسفور (P)', unit: 'mg/dL', min: 2.5, max: 4.5, category: 'أخرى', tips: { high: 'قد يشير إلى مشاكل في الكلى أو الغدة جار درقية.', low: 'قد يشير إلى نقص فيتامين D أو مشاكل في الغدة الدرقية.' } },
+            { id: 'chloride', name: 'الكلوريد (Cl)', unit: 'mEq/L', min: 98, max: 106, category: 'أخرى', tips: { high: 'قد يشير إلى جفاف أو مشاكل في الكلى.', low: 'قد يشير إلى نقص صوديوم أو مشاكل في الكلى.' } },
+            { id: 'bicarbonate', name: 'البيكربونات (HCO3)', unit: 'mEq/L', min: 22, max: 28, category: 'أخرى', tips: { high: 'قد يشير إلى قلوية الدم. استشر الطبيب.', low: 'قد يشير إلى حمضية الدم. استشر الطبيب.' } },
+            { id: 'amylase', name: 'الأميليز (Amylase)', unit: 'U/L', min: 30, max: 110, category: 'البنكرياس', tips: { high: 'قد يشير إلى التهاب البنكرياس. استشر الطبيب فوراً.', low: 'نادر. قد يشير إلى تلف في البنكرياس.' } },
+            { id: 'lipase', name: 'الليباز (Lipase)', unit: 'U/L', min: 10, max: 140, category: 'البنكرياس', tips: { high: 'قد يشير إلى التهاب البنكرياس. استشر الطبيب فوراً.', low: 'نادر. عادة لا يشكل خطراً.' } },
+            { id: 'ldh', name: 'إنزيم LDH', unit: 'U/L', min: 140, max: 280, category: 'أخرى', tips: { high: 'قد يشير إلى تلف في الأنسجة. استشر الطبيب.', low: 'نادر. عادة لا يشكل خطراً.' } },
+            { id: 'ck', name: 'إنزيم CK', unit: 'U/L', min: 22, max: 198, category: 'القلب', tips: { high: 'قد يشير إلى تلف في العضلات أو القلب. استشر الطبيب.', low: 'نادر. عادة لا يشكل خطراً.' } },
+            { id: 'troponin', name: 'التروبونين (Troponin)', unit: 'ng/mL', min: 0, max: 0.04, category: 'القلب', tips: { high: 'قد يشير إلى تلف في عضلة القلب. استشر الطبيب فوراً!', low: 'طبيعي. لا يوجد تلف في القلب.' } },
+            { id: 'bnp', name: 'BNP', unit: 'pg/mL', min: 0, max: 100, category: 'القلب', tips: { high: 'قد يشير إلى فشل قلبي. استشر طبيب القلب.', low: 'طبيعي. القلب يعمل بشكل جيد.' } },
+            { id: 'homocysteine', name: 'الهوموسيستين', unit: 'μmol/L', min: 5, max: 15, category: 'القلب', tips: { high: 'خطر أمراض قلب وأوعية دموية. تناول B6، B12، وحمض الفوليك.', low: 'ممتاز! استمر على نمط حياتك الصحي.' } },
+            { id: 'insulin', name: 'الأنسولين الصيامي', unit: 'μIU/mL', min: 2.6, max: 24.9, category: 'السكر', tips: { high: 'قد يشير إلى مقاومة أنسولين. مارس الرياضة وقلل السكريات.', low: 'قد يشير إلى نقص سكر. تناول وجبات منتظمة.' } },
+            { id: 'c_peptide', name: 'ببتيد C (C-Peptide)', unit: 'ng/mL', min: 0.8, max: 3.1, category: 'السكر', tips: { high: 'قد يشير إلى مقاومة أنسولين أو ورم.', low: 'قد يشير إلى سكري من النوع 1. استشر الطبيب.' } },
+            { id: 'testosterone', name: 'التستوستيرون (للرجال)', unit: 'ng/dL', min: 300, max: 1000, category: 'الهرمونات', tips: { high: 'نادر. قد يشير إلى مشاكل في الغدة الكظرية.', low: 'نقص تستوستيرون. استشر طبيب الغدد.' } },
+            { id: 'progesterone', name: 'البروجسترون (للنساء)', unit: 'ng/mL', min: 0.1, max: 25, category: 'الهرمونات', tips: { high: 'قد يكون طبيعياً في الحمل. استشارة الطبيب مهمة.', low: 'قد يشير إلى مشاكل في الإباضة. استشارة طبيب النساء.' } },
+            { id: 'estrogen', name: 'الاستروجين (E2)', unit: 'pg/mL', min: 30, max: 400, category: 'الهرمونات', tips: { high: 'قد يشير إلى مشاكل في المبايض. استشر طبيب النساء.', low: 'قد يشير إلى انقطاع الطمث المبكر. استشر الطبيب.' } },
+            { id: 'prolactin', name: 'البرولاكتين', unit: 'ng/mL', min: 4.8, max: 23.3, category: 'الهرمونات', tips: { high: 'قد يشير إلى ورم في الغدة النخامية. استشر طبيب الغدد.', low: 'نادر. عادة لا يشكل خطراً.' } },
+            { id: 'cortisol', name: 'الكورتيزول الصباحي', unit: 'μg/dL', min: 10, max: 20, category: 'الهرمونات', tips: { high: 'قد يشير إلى متلازمة كوشينغ. استشر طبيب الغدد.', low: 'قد يشير إلى قصور الغدة الكظرية. استشر الطبيب.' } },
+            { id: 'd_dimer', name: 'D-Dimer', unit: 'ng/mL', min: 0, max: 500, category: 'التجلط', tips: { high: 'قد يشير إلى جلطة دموية. استشر الطبيب فوراً!', low: 'طبيعي. احتمال جلطات منخفض.' } },
+            { id: 'inr', name: 'INR', unit: '', min: 0.8, max: 1.2, category: 'التجلط', tips: { high: 'خطر نزيف. استشر الطبيب فوراً.', low: 'خجل تجلط. استشر الطبيب.' } },
+            { id: 'pt', name: 'زمن البروثرومبين (PT)', unit: 'sec', min: 11, max: 13.5, category: 'التجلط', tips: { high: 'قد يشير إلى مشاكل في التجلط. استشر الطبيب.', low: 'نادر. قد يشير إلى زيادة تجلط.' } },
+            { id: 'aptt', name: 'APTT', unit: 'sec', min: 25, max: 35, category: 'التجلط', tips: { high: 'قد يشير إلى نقص في عوامل التجلط. استشر الطبيب.', low: 'قد يشير إلى زيادة تجلط. استشر الطبيب.' } },
+            { id: 'fibrinogen', name: 'الفبرينوجين', unit: 'mg/dL', min: 200, max: 400, category: 'التجلط', tips: { high: 'قد يشير إلى التهاب أو زيادة تجلط. استشر الطبيب.', low: 'خطر نزيف. استشر الطبيب فوراً.' } }
+        ];
+
+        // Generate Test Cards
+        function generateTests() {
+            const grid = document.getElementById('testsGrid');
+            grid.innerHTML = '';
+            
+            testsDB.forEach(test => {
+                const card = document.createElement('div');
+                card.className = 'test-card';
+                card.id = `card-${test.id}`;
+                card.innerHTML = `
+                    <div class="test-header">
+                        <div>
+                            <div class="test-name">${test.name}</div>
+                            <div style="font-size: 12px; color: var(--primary); margin-top: 5px;">${test.category}</div>
+                        </div>
+                        <span class="test-unit">${test.unit}</span>
+                    </div>
+                    <div class="test-input-group">
+                        <input type="number" step="0.01" id="input-${test.id}" placeholder="أدخل القيمة" oninput="checkValue('${test.id}')">
+                    </div>
+                    <div class="range-info">
+                        <i class="fas fa-ruler-horizontal"></i> النطاق الطبيعي: ${test.min} - ${test.max} ${test.unit}
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progress-${test.id}" style="width: 0%; background: var(--primary);"></div>
+                    </div>
+                    <div class="test-result" id="result-${test.id}"></div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Check Value
+        function checkValue(testId) {
+            const test = testsDB.find(t => t.id === testId);
+            const input = document.getElementById(`input-${testId}`);
+            const card = document.getElementById(`card-${testId}`);
+            const result = document.getElementById(`result-${testId}`);
+            const progress = document.getElementById(`progress-${testId}`);
+            
+            const value = parseFloat(input.value);
+            if (isNaN(value)) {
+                card.className = 'test-card';
+                input.className = '';
+                result.className = 'test-result';
+                progress.style.width = '0%';
+                return;
+            }
+
+            let status = 'normal';
+            let message = '✅ القيمة ضمن النطاق الطبيعي';
+            let color = '#2ecc71';
+
+            if (value < test.min) {
+                status = 'danger';
+                message = `⚠️ منخفض: ${test.tips.low}`;
+                color = '#e74c3c';
+            } else if (value > test.max) {
+                status = 'danger';
+                message = `⚠️ مرتفع: ${test.tips.high}`;
+                color = '#f39c12';
+                if (test.max > 0 && (value - test.max) / test.max > 0.5) {
+                    color = '#e74c3c';
+                }
+            }
+
+            const range = test.max - test.min;
+            const normalizedValue = Math.max(0, Math.min(100, ((value - test.min) / range) * 100));
+            progress.style.width = normalizedValue + '%';
+            progress.style.background = color;
+
+            card.className = `test-card status-${status}`;
+            input.className = `status-${status}`;
+            result.className = `test-result show ${status}`;
+            result.textContent = message;
+        }
+
+        // Search Tests
+        function searchTests() {
+            const query = document.getElementById('searchTests').value.toLowerCase();
+            const cards = document.querySelectorAll('.test-card');
+            
+            cards.forEach(card => {
+                const name = card.querySelector('.test-name').textContent.toLowerCase();
+                const category = card.querySelector('.test-header div div:last-child').textContent.toLowerCase();
+                
+                if (name.includes(query) || category.includes(query)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Analyze Results
+        function analyzeResults() {
+            let normal = 0, warning = 0, danger = 0;
+            const tips = [];
+
+            testsDB.forEach(test => {
+                const input = document.getElementById(`input-${test.id}`);
+                const value = parseFloat(input.value);
+                
+                if (isNaN(value)) return;
+
+                if (value >= test.min && value <= test.max) {
+                    normal++;
+                } else if (value < test.min) {
+                    danger++;
+                    tips.push({ test: test.name, message: test.tips.low, type: 'low' });
+                } else {
+                    if ((value - test.max) / test.max > 0.5) {
+                        danger++;
+                    } else {
+                        warning++;
+                    }
+                    tips.push({ test: test.name, message: test.tips.high, type: 'high' });
+                }
+            });
+
+            document.getElementById('normalCount').textContent = normal;
+            document.getElementById('warningCount').textContent = warning;
+            document.getElementById('dangerCount').textContent = danger;
+
+            document.getElementById('results').classList.add('show');
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+
+            updateChart(normal, warning, danger);
+
+            const tipsList = document.getElementById('tipsList');
+            tipsList.innerHTML = '';
+            if (tips.length === 0) {
+                tipsList.innerHTML = '<div class="tip-item">🎉 جميع قيمك ضمن النطاق الطبيعي! استمر على نمط حياتك الصحي.</div>';
+            } else {
+                tips.forEach(tip => {
+                    const tipEl = document.createElement('div');
+                    tipEl.className = 'tip-item';
+                    tipEl.innerHTML = `<strong>${tip.test}:</strong> ${tip.message}`;
+                    tipsList.appendChild(tipEl);
+                });
+            }
+        }
+
+        // Update Chart
+        let resultsChart = null;
+        function updateChart(normal, warning, danger) {
+            const ctx = document.getElementById('resultsChart').getContext('2d');
+            
+            if (resultsChart) {
+                resultsChart.destroy();
+            }
+
+            resultsChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['طبيعي', 'يحتاج مراقبة', 'مراجعة طبية'],
+                    datasets: [{
+                        data: [normal, warning, danger],
+                        backgroundColor: ['#2ecc71', '#f39c12', '#e74c3c'],
+                        borderColor: 'rgba(5, 42, 61, 0.8)',
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#B3CDD7',
+                                font: { family: 'Tajawal', size: 14 },
+                                padding: 20
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Clear All
+        function clearAll() {
+            testsDB.forEach(test => {
+                document.getElementById(`input-${test.id}`).value = '';
+                checkValue(test.id);
+            });
+            document.getElementById('results').classList.remove('show');
+            document.getElementById('searchTests').value = '';
+            searchTests();
+        }
+
+        // Export Report
+        function exportReport() {
+            let report = '═══ تقرير تحليلي | Ta7leeli ═══\n\n';
+            report += `التاريخ: ${new Date().toLocaleDateString('ar-SA')}\n\n`;
+            
+            let hasData = false;
+            testsDB.forEach(test => {
+                const value = document.getElementById(`input-${test.id}`).value;
+                if (value) {
+                    hasData = true;
+                    const val = parseFloat(value);
+                    let status = 'طبيعي';
+                    if (val < test.min) status = 'منخفض';
+                    else if (val > test.max) status = 'مرتفع';
+                    
+                    report += `${test.name}: ${value} ${test.unit} (${status})\n`;
+                    report += `النطاق الطبيعي: ${test.min} - ${test.max} ${test.unit}\n\n`;
+                }
+            });
+
+            if (!hasData) {
+                showModal('لا توجد بيانات', 'الرجاء إدخال قيم التحاليل أولاً قبل تصدير التقرير.');
+                return;
+            }
+
+            report += '\n⚠️ تنبيه: هذا التقرير إرشادي فقط ولا يغني عن استشارة الطبيب المختص.';
+
+            const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Ta7leeli_Report_${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Handle Image Upload
+        async function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            document.getElementById('loading').classList.add('show');
+
+            try {
+                const result = await Tesseract.recognize(
+                    file,
+                    'ara+eng',
+                    { logger: m => console.log(m) }
+                );
+
+                const text = result.data.text;
+                console.log('OCR Result:', text);
+
+                testsDB.forEach(test => {
+                    const patterns = [
+                        new RegExp(`${test.name.replace(/[()]/g, '\\$&')}.*?([0-9]+\\.?[0-9]*)`, 'i'),
+                        new RegExp(`${test.id}.*?([0-9]+\\.?[0-9]*)`, 'i'),
+                        new RegExp(`${test.name.split(' ')[0]}.*?([0-9]+\\.?[0-9]*)`, 'i')
+                    ];
+
+                    for (const pattern of patterns) {
+                        const match = text.match(pattern);
+                        if (match) {
+                            const value = parseFloat(match[1]);
+                            if (!isNaN(value)) {
+                                document.getElementById(`input-${test.id}`).value = value;
+                                checkValue(test.id);
+                                break;
+                            }
+                        }
+                    }
+                });
+
+                showModal('تم القراءة', 'تم استخراج البيانات من الصورة بنجاح. يرجى التحقق من القيم المستخرجة.');
+            } catch (error) {
+                showModal('خطأ', 'حدث خطأ أثناء قراءة الصورة. يرجى المحاولة مرة أخرى أو إدخال القيم يدوياً.');
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+            }
+        }
+
+        // Handle PDF Upload
+        function handlePdfUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            showModal('PDF', 'جاري معالجة ملف PDF...\n\nملاحظة: معالجة PDF تحتاج إلى خادم خارجي. في النسخة النهائية، سيتم ربطها بـ API.');
+            
+            setTimeout(() => {
+                showModal('معلومة', 'معالجة PDF تتطلب خادم خارجي (API).\n\nفي النسخة النهائية على الإنترنت، سيتم ربط الموقع بـ:\n• Google Cloud Vision API\n• أو Azure Computer Vision\n• أو AWS Textract\n\nللحصول على أفضل النتائج، استخدم خاصية رفع الصورة أو الإدخال اليدوي.');
+            }, 2000);
+        }
+
+        // Modal Functions
+        function showModal(title, text) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalText').textContent = text;
+            document.getElementById('modal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('show');
+        }
+
+        document.getElementById('modal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            generateTests();
+        });
+    </script>
+</body>
+</html>

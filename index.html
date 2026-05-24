@@ -7,6 +7,8 @@
 <title>تحليل التحاليل الطبية الذكي - يزن تاجو</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<!-- Tesseract.js للقراءة الذكية -->
+<script src="https://unpkg.com/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
 :root { --navy:#1D1A39; --purple:#451952; --magenta:#662549; --rose:#AE445A; --peach:#F39F5A; --cream:#E8BCB9; }
@@ -21,84 +23,20 @@ body { font-family:'Noto Kufi Arabic',sans-serif; background:linear-gradient(180
 .header p { font-size:0.75rem; opacity:0.7; margin-top:6px; }
 .glass { background:rgba(29,26,57,0.88); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(232,188,185,0.15); border-radius:24px; padding:20px; box-shadow:0 12px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04); }
 .home { display:flex; flex-direction:column; align-items:center; gap:20px; padding:30px 20px; min-height:55vh; justify-content:center; }
-
-/* ====== الحل النهائي: input ظاهر بس صغير ====== */
-.real-file-input {
-  position:fixed;
-  bottom:0;
-  right:0;
-  width:1px;
-  height:1px;
-  opacity:0.01;
-  cursor:pointer;
-  /* ممنوع: display:none, visibility:hidden */
-}
-
-.camera-wrapper {
-  display:block;
-  width:120px;
-  height:120px;
-  margin:0 auto;
-  border-radius:50%;
-  overflow:hidden;
-  cursor:pointer;
-}
-.camera-btn {
-  width:100%; height:100%; border-radius:50%;
-  background:linear-gradient(135deg,var(--rose),var(--peach));
-  display:flex; align-items:center; justify-content:center; flex-direction:column;
-  box-shadow:0 15px 45px rgba(174,68,90,0.45), 0 0 80px rgba(243,159,90,0.15);
-  animation:pulse 2.5s infinite ease-in-out; border:none; gap:4px;
-}
+.camera-wrapper { display:block; width:120px; height:120px; margin:0 auto; border-radius:50%; overflow:hidden; cursor:pointer; }
+.camera-btn { width:100%; height:100%; border-radius:50%; background:linear-gradient(135deg,var(--rose),var(--peach)); display:flex; align-items:center; justify-content:center; flex-direction:column; box-shadow:0 15px 45px rgba(174,68,90,0.45), 0 0 80px rgba(243,159,90,0.15); animation:pulse 2.5s infinite ease-in-out; border:none; gap:4px; }
 @keyframes pulse { 0%,100%{transform:scale(1);box-shadow:0 15px 45px rgba(174,68,90,0.45);} 50%{transform:scale(1.05);box-shadow:0 20px 55px rgba(174,68,90,0.6);} }
 .camera-btn i { font-size:36px; color:#fff; }
 .camera-btn span { font-size:0.6rem; font-weight:700; color:#fff; font-family:'Noto Kufi Arabic',sans-serif; }
-
-.gallery-wrapper {
-  display:block;
-  width:85%;
-  max-width:320px;
-  margin:0 auto;
-  border-radius:50px;
-  overflow:hidden;
-  cursor:pointer;
-}
-.gallery-btn {
-  width:100%; padding:16px; border:none; border-radius:50px;
-  font-family:'Noto Kufi Arabic',sans-serif; font-size:1rem; font-weight:800;
-  transition:all 0.3s ease; text-align:center;
-  background:linear-gradient(135deg,var(--magenta),var(--rose)); color:#fff;
-  box-shadow:0 10px 30px rgba(102,37,73,0.4);
-  display:flex; align-items:center; justify-content:center; gap:10px;
-}
+.gallery-wrapper { display:block; width:85%; max-width:320px; margin:0 auto; border-radius:50px; overflow:hidden; cursor:pointer; }
+.gallery-btn { width:100%; padding:16px; border:none; border-radius:50px; font-family:'Noto Kufi Arabic',sans-serif; font-size:1rem; font-weight:800; transition:all 0.3s ease; text-align:center; background:linear-gradient(135deg,var(--magenta),var(--rose)); color:#fff; box-shadow:0 10px 30px rgba(102,37,73,0.4); display:flex; align-items:center; justify-content:center; gap:10px; }
 .gallery-btn i { font-size:1.2rem; }
 .gallery-btn:active { transform:scale(0.97); box-shadow:0 15px 40px rgba(102,37,73,0.6); }
-
-.start-btn {
-  width:85%; max-width:320px; padding:18px; border:none; border-radius:50px;
-  font-family:'Noto Kufi Arabic',sans-serif; font-size:1.1rem; font-weight:900; cursor:not-allowed;
-  transition:all 0.3s ease; text-align:center;
-  background:linear-gradient(135deg,#555,#777); color:#aaa;
-  box-shadow:none;
-  display:flex; align-items:center; justify-content:center; gap:10px;
-  opacity:0.6;
-}
+.start-btn { width:85%; max-width:320px; padding:18px; border:none; border-radius:50px; font-family:'Noto Kufi Arabic',sans-serif; font-size:1.1rem; font-weight:900; cursor:not-allowed; transition:all 0.3s ease; text-align:center; background:linear-gradient(135deg,#555,#777); color:#aaa; box-shadow:none; display:flex; align-items:center; justify-content:center; gap:10px; opacity:0.6; }
 .start-btn i { font-size:1.3rem; }
-.start-btn.active {
-  background:linear-gradient(135deg,var(--peach),#ff8c42); color:#fff;
-  box-shadow:0 12px 35px rgba(243,159,90,0.5);
-  cursor:pointer; opacity:1;
-}
+.start-btn.active { background:linear-gradient(135deg,var(--peach),#ff8c42); color:#fff; box-shadow:0 12px 35px rgba(243,159,90,0.5); cursor:pointer; opacity:1; }
 .start-btn.active:active { transform:scale(0.97); box-shadow:0 18px 45px rgba(243,159,90,0.7); }
-.preview-box {
-  width:100%; max-width:300px;
-  background:rgba(29,26,57,0.6);
-  border:2px dashed var(--peach);
-  border-radius:16px;
-  padding:15px;
-  text-align:center;
-  display:none;
-}
+.preview-box { width:100%; max-width:300px; background:rgba(29,26,57,0.6); border:2px dashed var(--peach); border-radius:16px; padding:15px; text-align:center; display:none; }
 .preview-box.show { display:block; }
 .preview-box .preview-label { font-size:0.75rem; color:var(--peach); margin-bottom:8px; font-weight:700; }
 .preview-home { width:100%; max-height:200px; object-fit:cover; border-radius:12px; }
@@ -170,13 +108,24 @@ tr:nth-child(even) { background:rgba(69,25,82,0.35); }
 ::-webkit-scrollbar { width:6px; }
 ::-webkit-scrollbar-track { background:var(--navy); }
 ::-webkit-scrollbar-thumb { background:linear-gradient(var(--rose),var(--peach)); border-radius:3px; }
+
+/* ====== حل مشكلة Android Chrome ====== */
+.real-file-input {
+  position:fixed;
+  bottom:0;
+  right:0;
+  width:1px;
+  height:1px;
+  opacity:0.01;
+  cursor:pointer;
+}
 </style>
 </head>
 <body>
 <div class="particles" id="particles"></div>
 <div class="loading" id="loading">
   <div class="spinner"></div>
-  <p>جاري تحليل الصورة...</p>
+  <p id="loadingText">جاري تحليل الصورة...</p>
   <div class="scan-line"></div>
 </div>
 <div class="container">
@@ -185,8 +134,6 @@ tr:nth-child(even) { background:rgba(69,25,82,0.35); }
     <p>نظام ذكي لقراءة وتحليل التحاليل الطبية</p>
   </div>
   <div class="home glass" id="home">
-    
-    <!-- ====== الحل النهائي: label + input ظاهر بس صغير ====== -->
     <label for="cameraInput" class="camera-wrapper">
       <div class="camera-btn">
         <i class="fas fa-camera"></i>
@@ -222,8 +169,15 @@ tr:nth-child(even) { background:rgba(69,25,82,0.35); }
       تنبيه: هذه النتائج للتوعية فقط ولا تغني عن استشارة الطبيب
     </div>
     <h2>نتائج التحليل الطبي</h2>
-    <p class="sub">تم استخراج البيانات من الصورة بنجاح</p>
+    <p class="sub" id="resultsSub">تم استخراج البيانات من الصورة بنجاح</p>
     <img class="preview-img" id="preview" src="" alt="">
+    
+    <!-- النص المقروء من الصورة -->
+    <div class="glass" style="margin-bottom:20px; display:none;" id="ocrTextBox">
+      <h3 style="font-size:0.9rem; color:var(--peach); margin-bottom:10px;"><i class="fas fa-file-alt" style="margin-left:6px;"></i>النص المقروء من الصورة:</h3>
+      <pre style="font-size:0.7rem; color:var(--cream); opacity:0.8; white-space:pre-wrap; word-break:break-word; max-height:200px; overflow-y:auto;" id="ocrText"></pre>
+    </div>
+    
     <div class="table-wrap">
       <table>
         <thead><tr><th>المؤشر</th><th>النتيجة</th><th>الوحدة</th><th>الطبيعي</th><th>الحالة</th></tr></thead>
@@ -272,18 +226,278 @@ for(let i=0; i<<15; i++){
   document.getElementById('particles').appendChild(p);
 }
 
-const data=[
-  {ind:"Hemoglobin",val:13.5,unit:"g/dL",norm:"12.0-15.5",st:"normal",exp:"الهيموغلوبين بروتين نقل الأكسجين. النتيجة طبيعية وتوضح وظيفة جيدة.",dis:"لا مؤشرات لفقر الدم. صحة نخاع العظم والتغذية جيدة.",adv:"استمر بنظام غذائي غني بالحديد والفيتامينات. تناول لحوم حمراء وسبانخ.",ref:"WHO 2024"},
-  {ind:"WBC",val:11.2,unit:"10⁹/L",norm:"4.0-10.0",st:"high",exp:"كريات الدم البيضاء خلايا المناعة. الارتفاع يشير لاستجابة التهابية خفيفة.",dis:"قد يشير لعدوى بكتيرية خفيفة أو التهاب. راجع الطبيب إذا استمر.",adv:"اشرب ماء كثير، استرح، تناول فيتامين C والزنك لتعزيز المناعة.",ref:"ASH 2024"},
-  {ind:"Glucose",val:95,unit:"mg/dL",norm:"70-100",st:"normal",exp:"السكر في الدم طبيعي. وظيفة البنكرياس واستجابة الأنسولين جيدة.",dis:"لا مؤشرات لمرض السكري. تحكم جيد في التمثيل الغذائي.",adv:"حافظ على نظام غذائي متوازن. مارس رياضة 150 دقيقة أسبوعياً.",ref:"ADA 2024"},
-  {ind:"Cholesterol",val:245,unit:"mg/dL",norm:"<<200",st:"high",exp:"الكوليسترول مرتفع. يزيد خطر تصلب الشرايين والأمراض القلبية.",dis:"يزيد خطر تصلب الشرايين والجلطات. يحتاج تدخل غذائي وربما دوائي.",adv:"قلل الدهون المشبعة. تناول ألياف قابلة للذوبان. مارس رياضة 30 دقيقة يومياً.",ref:"AHA/ACC 2024"},
-  {ind:"Creatinine",val:0.9,unit:"mg/dL",norm:"0.6-1.2",st:"normal",exp:"الكرياتينين مؤشر وظيفة الكلى. طبيعي يعني تصفية جيدة للفضلات.",dis:"لا مؤشرات لفشل كلوي. معدل الترشيح الكبيبي طبيعي.",adv:"اشرب 8 أكواب ماء يومياً. تجنب الإفراط في المسكنات.",ref:"KDIGO 2024"},
-  {ind:"ALT",val:55,unit:"U/L",norm:"7-56",st:"borderline",exp:"إنزيم الكبد على الحدود العليا. قد يشير لإجهاد كبدي خفيف.",dis:"قد يشير لتراكم دهون كبدية خفيف أو تأثير دواء. نادراً التهاب كبدي.",adv:"قلل الكحول. تناول غذاء صحي. أعد الفحص بعد 3 أشهر.",ref:"EASL 2024"},
-  {ind:"TSH",val:2.8,unit:"mIU/L",norm:"0.4-4.0",st:"normal",exp:"TSH يتحكم بالغدة الدرقية. طبيعي يعني إفراز طبيعي للهرمونات.",dis:"لا مؤشرات لقصور أو فرط نشاط الغدة الدرقية.",adv:"تناول يود كافٍ (أسماك بحرية). تجنب الإفراط بالكرنب الخام.",ref:"ATA 2024"},
-  {ind:"Platelets",val:280,unit:"10⁹/L",norm:"150-400",st:"normal",exp:"الصفائح الدموية للتخثر. طبيعي يضمن وظيفة تخثر صحية.",dis:"لا مؤشرات لاضطرابات نزفية أو زيادة تجلط.",adv:"حافظ على B12 وحمض الفوليك. تجنب أدوية تؤثر على الصفائح.",ref:"ASH 2024"}
-];
+// ====== بيانات مرجعية للتحاليل ======
+const referenceData = {
+  "Hemoglobin": { unit: "g/dL", normal: "12.0-15.5", low: 12.0, high: 15.5 },
+  "WBC": { unit: "10⁹/L", normal: "4.0-10.0", low: 4.0, high: 10.0 },
+  "Glucose": { unit: "mg/dL", normal: "70-100", low: 70, high: 100 },
+  "Cholesterol": { unit: "mg/dL", normal: "<200", low: null, high: 200 },
+  "Creatinine": { unit: "mg/dL", normal: "0.6-1.2", low: 0.6, high: 1.2 },
+  "ALT": { unit: "U/L", normal: "7-56", low: 7, high: 56 },
+  "TSH": { unit: "mIU/L", normal: "0.4-4.0", low: 0.4, high: 4.0 },
+  "Platelets": { unit: "10⁹/L", normal: "150-400", low: 150, high: 400 },
+  "RBC": { unit: "10¹²/L", normal: "4.5-5.5", low: 4.5, high: 5.5 },
+  "HCT": { unit: "%", normal: "36-46", low: 36, high: 46 },
+  "MCV": { unit: "fL", normal: "80-100", low: 80, high: 100 },
+  "MCH": { unit: "pg", normal: "27-33", low: 27, high: 33 },
+  "MCHC": { unit: "g/dL", normal: "32-36", low: 32, high: 36 },
+  "RDW": { unit: "%", normal: "11.5-14.5", low: 11.5, high: 14.5 },
+  "Neutrophils": { unit: "%", normal: "40-70", low: 40, high: 70 },
+  "Lymphocytes": { unit: "%", normal: "20-40", low: 20, high: 40 },
+  "Monocytes": { unit: "%", normal: "2-8", low: 2, high: 8 },
+  "Eosinophils": { unit: "%", normal: "1-4", low: 1, high: 4 },
+  "Basophils": { unit: "%", normal: "0-1", low: 0, high: 1 },
+  "Urea": { unit: "mg/dL", normal: "7-20", low: 7, high: 20 },
+  "Uric Acid": { unit: "mg/dL", normal: "3.5-7.2", low: 3.5, high: 7.2 },
+  "Triglycerides": { unit: "mg/dL", normal: "<150", low: null, high: 150 },
+  "HDL": { unit: "mg/dL", normal: ">40", low: 40, high: null },
+  "LDL": { unit: "mg/dL", normal: "<100", low: null, high: 100 },
+  "AST": { unit: "U/L", normal: "10-40", low: 10, high: 40 },
+  "ALP": { unit: "U/L", normal: "44-147", low: 44, high: 147 },
+  "Bilirubin": { unit: "mg/dL", normal: "0.1-1.2", low: 0.1, high: 1.2 },
+  "Calcium": { unit: "mg/dL", normal: "8.5-10.5", low: 8.5, high: 10.5 },
+  "Sodium": { unit: "mEq/L", normal: "135-145", low: 135, high: 145 },
+  "Potassium": { unit: "mEq/L", normal: "3.5-5.0", low: 3.5, high: 5.0 },
+  "Iron": { unit: "μg/dL", normal: "60-170", low: 60, high: 170 },
+  "Ferritin": { unit: "ng/mL", normal: "12-300", low: 12, high: 300 }
+};
 
-const advice=[
+let img = null, pieC = null, barC = null;
+let extractedData = []; // البيانات المستخرجة من الصورة
+
+function isImageFile(file) {
+  if (!file) return false;
+  if (file.type && file.type.startsWith('image/')) return true;
+  const validExts = ['jpg','jpeg','png','gif','webp','bmp','heic','heif'];
+  const ext = file.name.split('.').pop().toLowerCase();
+  return validExts.includes(ext);
+}
+
+function handleFile(file) {
+  if(!file) return;
+  if(!isImageFile(file)) {
+    alert('يرجى اختيار صورة صالحة');
+    return;
+  }
+  
+  let r = new FileReader();
+  r.onload = function(ev){
+    img = ev.target.result;
+    document.getElementById('preview').src = img;
+    document.getElementById('previewHome').src = img;
+    document.getElementById('previewBox').classList.add('show');
+    
+    let st = document.getElementById('statusText');
+    st.textContent = '✅ الصورة جاهزة! اضغط "ابدأ التحليل"';
+    st.classList.add('ready');
+    
+    let btn = document.getElementById('startBtn');
+    btn.disabled = false;
+    btn.classList.add('active');
+    
+    setTimeout(() => {
+      document.getElementById('previewBox').scrollIntoView({behavior:'smooth',block:'center'});
+    }, 100);
+  };
+  r.readAsDataURL(file);
+}
+
+document.getElementById('cameraInput').addEventListener('change', function(e){
+  if(e.target.files && e.target.files[0]) handleFile(e.target.files[0]);
+}, false);
+
+document.getElementById('galleryInput').addEventListener('change', function(e){
+  if(e.target.files && e.target.files[0]) handleFile(e.target.files[0]);
+}, false);
+
+// ====== دالة قراءة النص من الصورة باستخدام Tesseract.js ======
+async function readImageWithOCR(imageUrl) {
+  document.getElementById('loadingText').textContent = 'جاري قراءة النص من الصورة...';
+  
+  try {
+    const result = await Tesseract.recognize(
+      imageUrl,
+      'eng+ara', // اللغتين: إنجليزي + عربي
+      { 
+        logger: m => {
+          console.log(m);
+          if(m.status === 'recognizing text') {
+            document.getElementById('loadingText').textContent = 
+              `جاري القراءة... ${Math.round(m.progress * 100)}%`;
+          }
+        }
+      }
+    );
+    
+    return result.data.text;
+  } catch(err) {
+    console.error('OCR Error:', err);
+    return null;
+  }
+}
+
+// ====== دالة استخراج قيم التحاليل من النص ======
+function extractLabValues(text) {
+  const data = [];
+  const lines = text.split('\n');
+  
+  // أنماط للبحث عن قيم التحاليل
+  const patterns = [
+    // Hemoglobin
+    { name: 'Hemoglobin', regex: /(?:Hemoglobin|Hb|هيموغلوبين|هيموجلوبين)[^\d]*(\d+\.?\d*)/i },
+    // WBC
+    { name: 'WBC', regex: /(?:WBC|White Blood Cell|كريات بيضاء|خلايا بيضاء)[^\d]*(\d+\.?\d*)/i },
+    // Glucose
+    { name: 'Glucose', regex: /(?:Glucose|Sugar|سكر|جلوكوز)[^\d]*(\d+\.?\d*)/i },
+    // Cholesterol
+    { name: 'Cholesterol', regex: /(?:Cholesterol|كوليسترول)[^\d]*(\d+\.?\d*)/i },
+    // Creatinine
+    { name: 'Creatinine', regex: /(?:Creatinine|كرياتينين)[^\d]*(\d+\.?\d*)/i },
+    // ALT
+    { name: 'ALT', regex: /(?:ALT|SGPT|ألانين)[^\d]*(\d+\.?\d*)/i },
+    // TSH
+    { name: 'TSH', regex: /(?:TSH|thyroid stimulating|درقي)[^\d]*(\d+\.?\d*)/i },
+    // Platelets
+    { name: 'Platelets', regex: /(?:Platelets|PLT|صفائح|صفيحات)[^\d]*(\d+\.?\d*)/i },
+    // RBC
+    { name: 'RBC', regex: /(?:RBC|Red Blood Cell|كريات حمراء|خلايا حمراء)[^\d]*(\d+\.?\d*)/i },
+    // HCT
+    { name: 'HCT', regex: /(?:HCT|Hematocrit|هيماتوكريت)[^\d]*(\d+\.?\d*)/i },
+    // Triglycerides
+    { name: 'Triglycerides', regex: /(?:Triglycerides|TG|تريجليسيريد|دهون ثلاثية)[^\d]*(\d+\.?\d*)/i },
+    // HDL
+    { name: 'HDL', regex: /(?:HDL|hdl)[^\d]*(\d+\.?\d*)/i },
+    // LDL
+    { name: 'LDL', regex: /(?:LDL|ldl)[^\d]*(\d+\.?\d*)/i },
+    // Urea
+    { name: 'Urea', regex: /(?:Urea|يوريا)[^\d]*(\d+\.?\d*)/i },
+    // Uric Acid
+    { name: 'Uric Acid', regex: /(?:Uric Acid|حمض بولي|يوريك)[^\d]*(\d+\.?\d*)/i },
+    // AST
+    { name: 'AST', regex: /(?:AST|SGOT)[^\d]*(\d+\.?\d*)/i },
+    // ALP
+    { name: 'ALP', regex: /(?:ALP|Alkaline Phosphatase|فوسفاتيز)[^\d]*(\d+\.?\d*)/i },
+    // Bilirubin
+    { name: 'Bilirubin', regex: /(?:Bilirubin|بليروبين)[^\d]*(\d+\.?\d*)/i },
+    // Calcium
+    { name: 'Calcium', regex: /(?:Calcium|كالسيوم)[^\d]*(\d+\.?\d*)/i },
+    // Sodium
+    { name: 'Sodium', regex: /(?:Sodium|صوديوم|Na)[^\d]*(\d+\.?\d*)/i },
+    // Potassium
+    { name: 'Potassium', regex: /(?:Potassium|بوتاسيوم|K)[^\d]*(\d+\.?\d*)/i }
+  ];
+  
+  for(const pattern of patterns) {
+    const match = text.match(pattern.regex);
+    if(match && match[1]) {
+      const value = parseFloat(match[1]);
+      const ref = referenceData[pattern.name];
+      
+      if(ref) {
+        let status = 'normal';
+        if(ref.high !== null && value > ref.high) status = 'high';
+        else if(ref.low !== null && value < ref.low) status = 'low';
+        else if(ref.high !== null && value > ref.high * 0.95) status = 'borderline';
+        
+        data.push({
+          ind: pattern.name,
+          val: value,
+          unit: ref.unit,
+          norm: ref.normal,
+          st: status,
+          exp: getExplanation(pattern.name, status, value),
+          dis: getDiseaseInfo(pattern.name, status, value),
+          adv: getAdvice(pattern.name, status, value),
+          ref: 'WHO 2024'
+        });
+      }
+    }
+  }
+  
+  return data;
+}
+
+// ====== شروحات طبية ======
+function getExplanation(name, status, value) {
+  const explanations = {
+    Hemoglobin: {
+      normal: 'الهيموغلوبين طبيعي. نقل الأكسجين للأنسجة يعمل بشكل جيد.',
+      high: 'الهيموغلوبين مرتفع قليلاً. قد يشير لجفاف أو زيادة كريات الدم الحمراء.',
+      low: 'الهيموغلوبين منخفض! مؤشر لفقر الدم. يحتاج فحص وعلاج.',
+      borderline: 'الهيموغلوبين على الحدود. راقب وكّرر الفحص.'
+    },
+    WBC: {
+      normal: 'كريات الدم البيضاء طبيعية. المناعة تعمل بشكل جيد.',
+      high: 'الكريات البيضاء مرتفعة! قد تشير لعدوى أو التهاب.',
+      low: 'الكريات البيضاء منخفضة! المناعة ضعيفة. احترس من العدوى.',
+      borderline: 'الكريات البيضاء على الحدود. راقب الحالة.'
+    },
+    Glucose: {
+      normal: 'السكر في الدم طبيعي. البنكرياس يعمل بشكل جيد.',
+      high: 'السكر مرتفع! قد يشير لسكري أو مقاومة أنسولين.',
+      low: 'السكر منخفض! تناول شيء حالاً لتجنب الإغماء.',
+      borderline: 'السكر على الحدود. راقب نظامك الغذائي.'
+    },
+    Cholesterol: {
+      normal: 'الكوليسترول طبيعي. صحة القلب جيدة.',
+      high: 'الكوليسترول مرتفع! خطر أمراض القلب والشرايين.',
+      low: 'الكوليسترول منخفض. نادراً مشكلة.',
+      borderline: 'الكوليسترول على الحدود. غيّر نمط حياتك.'
+    },
+    default: 'تحليل يحتاج متابعة طبية.'
+  };
+  
+  return (explanations[name] && explanations[name][status]) || explanations.default;
+}
+
+function getDiseaseInfo(name, status, value) {
+  const diseases = {
+    Hemoglobin: {
+      low: 'فقر الدم (Anemia). أسباب: نقص حديد، B12، فوليك، نزيف.',
+      high: 'زيادة الكريات الحمراء (Polycythemia) أو جفاف.'
+    },
+    WBC: {
+      high: 'عدوى بكتيرية، التهاب، أو نادراً سرطان الدم.',
+      low: 'ضعف المناعة. أسباب: فيروس، أدوية، نقص فيتامينات.'
+    },
+    Glucose: {
+      high: 'سكري النوع 2، مقاومة أنسولين، أو إجهاد.',
+      low: 'نقص سكر الدم. أسباب: دواء، صيام طويل، ورم بنكرياس.'
+    },
+    Cholesterol: {
+      high: 'تصلب الشرايين، جلطات قلبية، سكتة دماغية.'
+    },
+    default: 'راجع الطبيب للتشخيص الدقيق.'
+  };
+  
+  return (diseases[name] && diseases[name][status]) || diseases.default;
+}
+
+function getAdvice(name, status, value) {
+  const advice = {
+    Hemoglobin: {
+      low: 'تناول: لحوم حمراء، كبد، سبانخ، فول، حبوب كاملة. فيتامين C مع الحديد.',
+      high: 'اشرب ماء كثير. راجع الطبيب.'
+    },
+    WBC: {
+      high: 'اشرب سوائل، استرح، تناول فيتامين C والزنك.',
+      low: 'تجنب العدوى (غسيل يدين)، تناول بروتين، فيتامينات.'
+    },
+    Glucose: {
+      high: 'قلل السكريات والنشويات. مارس رياضة. ربما دواء.',
+      low: 'تناول تمر أو عصير فوراً. كرر الفحص.'
+    },
+    Cholesterol: {
+      high: 'قلل دهون، مارس رياضة، تناول ألياف، سمك، مكسرات.'
+    },
+    default: 'استشر الطبيب دائماً.'
+  };
+  
+  return (advice[name] && advice[name][status]) || advice.default;
+}
+
+// ====== النصائح العامة ======
+const generalAdvice = [
   {t:"النظام الغذائي",c:"5 حصص خضروات وفواكه يومياً. ركز على الألياف والبروتينات النباتية. قلل السكريات والصوديوم."},
   {t:"النشاط البدني",c:"150 دقيقة رياضة هوائية أسبوعياً. أضف تمارين مقاومة مرتين. المشي السريع 30 دقيقة يومياً."},
   {t:"الترطيب",c:"8-10 أكواب ماء يومياً. الماء يساعد الكلى ويحافظ على لزوجة الدم."},
@@ -292,69 +506,99 @@ const advice=[
   {t:"إدارة التوتر",c:"تأمل أو يوغا 15 دقيقة يومياً. التوتر المزمن يرفع الكورتيزول."}
 ];
 
-const diseases=[
-  {t:"فرط كوليسترول الدم",c:"الارتفاع يزيد خطر تصلب الشرايين 2-3 أضعاف. كل انخفاض 1% في LDL يقلل خطر الأحداث القلبية 1%. العلاج: تعديل نمط الحياة أولاً، ثم ربما ستاتينات."},
-  {t:"الاستجابة الالتهابية",c:"WBC 10-12 ألف غالباً رد فعل على عدوى خفيفة. إذا استمر أكثر من أسبوعين، أجرِ CRP وESR إضافية."},
-  {t:"صحة الكبد",c:"ALT على الحدود قد يشير لدهون كبدية خفيفة (NAFLD). التدخل المبكر بتغيير نمط الحياة يعكس الضرر 80-90% خلال 6-12 شهراً."}
-];
-
-let img=null, pieC=null, barC=null;
-
-function isImageFile(file){
-  if(!file) return false;
-  if(file.type && file.type.startsWith('image/')) return true;
-  const validExts=['jpg','jpeg','png','gif','webp','bmp','heic','heif'];
-  const ext=file.name.split('.').pop().toLowerCase();
-  return validExts.includes(ext);
-}
-
-function handleFile(file){
-  console.log('handleFile called', file?file.name:'null');
-  if(!file){ console.log('no file selected'); return; }
-  if(!isImageFile(file)){ console.log('not an image file'); return; }
+// ====== الأمراض المحتملة ======
+function getDiseases(data) {
+  const diseases = [];
   
-  let r=new FileReader();
-  r.onload=function(ev){
-    console.log('FileReader loaded');
-    img=ev.target.result;
-    document.getElementById('preview').src=img;
-    let pb=document.getElementById('previewBox');
-    pb.classList.add('show');
-    document.getElementById('previewHome').src=img;
-    let st=document.getElementById('statusText');
-    st.textContent='✅ الصورة جاهزة! اضغط "ابدأ التحليل"';
-    st.classList.add('ready');
-    let btn=document.getElementById('startBtn');
-    btn.disabled=false;
-    btn.classList.add('active');
-    setTimeout(()=>{ pb.scrollIntoView({behavior:'smooth',block:'center'}); },100);
-  };
-  r.onerror=function(){ console.log('FileReader error'); };
-  r.readAsDataURL(file);
+  const chol = data.find(d => d.ind === 'Cholesterol');
+  if(chol && chol.st === 'high') {
+    diseases.push({
+      t: "فرط كوليسترول الدم",
+      c: `الكوليسترول ${chol.val} mg/dL يزيد خطر تصلب الشرايين. كل انخفاض 1% في LDL يقلل خطر الأحداث القلبية 1%. العلاج: تعديل نمط الحياة أولاً، ثم ربما ستاتينات.`
+    });
+  }
+  
+  const wbc = data.find(d => d.ind === 'WBC');
+  if(wbc && wbc.st === 'high') {
+    diseases.push({
+      t: "الاستجابة الالتهابية",
+      c: `WBC ${wbc.val} ألف/μL غالباً رد فعل على عدوى خفيفة. إذا استمر أكثر من أسبوعين، أجرِ CRP وESR إضافية.`
+    });
+  }
+  
+  const glu = data.find(d => d.ind === 'Glucose');
+  if(glu && glu.st === 'high') {
+    diseases.push({
+      t: "ارتفاع السكر في الدم",
+      c: `السكر ${glu.val} mg/dL قد يشير لسكري أو مقاومة أنسولين. أجرِ HbA1c للتأكد.`
+    });
+  }
+  
+  const hgb = data.find(d => d.ind === 'Hemoglobin');
+  if(hgb && hgb.st === 'low') {
+    diseases.push({
+      t: "فقر الدم",
+      c: `الهيموغلوبين ${hgb.val} g/dL منخفض. أسباب: نقص حديد، B12، فوليك، أو نزيف خفي. أجرِ Ferritin، B12، حمض فوليك.`
+    });
+  }
+  
+  if(diseases.length === 0) {
+    diseases.push({
+      t: "لا توجد مؤشرات خطيرة",
+      c: "التحاليل ضمن المعدلات الطبيعية تقريباً. استمر بنمط حياتك الصحي."
+    });
+  }
+  
+  return diseases;
 }
 
-// ====== الحل النهائي: change events ======
-document.getElementById('cameraInput').addEventListener('change', function(e){
-  console.log('camera change fired', e.target.files);
-  if(e.target.files && e.target.files[0]){
-    handleFile(e.target.files[0]);
+// ====== بدء التحليل ======
+async function start(){
+  if(!img){
+    alert('اختر صورة أولاً');
+    return;
   }
-}, false);
-
-document.getElementById('galleryInput').addEventListener('change', function(e){
-  console.log('gallery change fired', e.target.files);
-  if(e.target.files && e.target.files[0]){
-    handleFile(e.target.files[0]);
-  }
-}, false);
-
-function start(){
-  if(!img){ console.log('no image selected'); return; }
+  
   document.getElementById('loading').classList.add('active');
-  setTimeout(()=>{
-    document.getElementById('loading').classList.remove('active');
-    showResults();
-  },3000);
+  
+  // 1. قراءة النص من الصورة
+  const ocrText = await readImageWithOCR(img);
+  
+  // 2. عرض النص المقروء
+  if(ocrText) {
+    document.getElementById('ocrText').textContent = ocrText;
+    document.getElementById('ocrTextBox').style.display = 'block';
+    
+    // 3. استخراج القيم
+    extractedData = extractLabValues(ocrText);
+    
+    // إذا ما استخرج شي، استخدم بيانات وهمية للعرض
+    if(extractedData.length === 0) {
+      document.getElementById('resultsSub').textContent = 
+        '⚠️ لم يتم التعرف على تحاليل واضحة. جاري عرض بيانات توضيحية.';
+      extractedData = getDefaultData();
+    } else {
+      document.getElementById('resultsSub').textContent = 
+        `✅ تم التعرف على ${extractedData.length} مؤشر من الصورة`;
+    }
+  } else {
+    document.getElementById('resultsSub').textContent = 
+      '⚠️ تعذر قراءة النص. جاري عرض بيانات توضيحية.';
+    extractedData = getDefaultData();
+    document.getElementById('ocrTextBox').style.display = 'none';
+  }
+  
+  document.getElementById('loading').classList.remove('active');
+  showResults();
+}
+
+function getDefaultData() {
+  return [
+    {ind:"Hemoglobin",val:13.5,unit:"g/dL",norm:"12.0-15.5",st:"normal",exp:"الهيموغلوبين بروتين نقل الأكسجين. النتيجة طبيعية.",dis:"لا مؤشرات لفقر الدم.",adv:"استمر بنظام غذائي غني بالحديد.",ref:"WHO 2024"},
+    {ind:"WBC",val:11.2,unit:"10⁹/L",norm:"4.0-10.0",st:"high",exp:"كريات الدم البيضاء خلايا المناعة. الارتفاع يشير لاستجابة التهابية.",dis:"قد يشير لعدوى بكتيرية خفيفة.",adv:"اشرب ماء كثير، استرح.",ref:"ASH 2024"},
+    {ind:"Glucose",val:95,unit:"mg/dL",norm:"70-100",st:"normal",exp:"السكر في الدم طبيعي.",dis:"لا مؤشرات لمرض السكري.",adv:"حافظ على نظام غذائي متوازن.",ref:"ADA 2024"},
+    {ind:"Cholesterol",val:245,unit:"mg/dL",norm:"<200",st:"high",exp:"الكوليسترول مرتفع.",dis:"يزيد خطر تصلب الشرايين.",adv:"قلل الدهون المشبعة.",ref:"AHA/ACC 2024"}
+  ];
 }
 
 function showResults(){
@@ -368,11 +612,12 @@ function goBack(){
   document.getElementById('results').style.display='none';
   document.getElementById('home').style.display='flex';
   img=null;
+  extractedData=[];
   document.getElementById('cameraInput').value='';
   document.getElementById('galleryInput').value='';
-  let pb=document.getElementById('previewBox');
-  pb.classList.remove('show');
+  document.getElementById('previewBox').classList.remove('show');
   document.getElementById('previewHome').src='';
+  document.getElementById('ocrTextBox').style.display='none';
   let st=document.getElementById('statusText');
   st.textContent='اختر صورة أولاً (التصوير أو المعرض)';
   st.classList.remove('ready');
@@ -384,7 +629,7 @@ function goBack(){
 
 function fillTable(){
   let tb=document.getElementById('tbody'); tb.innerHTML='';
-  data.forEach(d=>{
+  extractedData.forEach(d=>{
     let bc='',bt='';
     switch(d.st){case'normal':bc='b-n';bt='طبيعي';break; case'high':bc='b-h';bt='مرتفع';break; case'low':bc='b-l';bt='منخفض';break; case'borderline':bc='b-b';bt='حدود';break;}
     let r=document.createElement('tr');
@@ -395,30 +640,35 @@ function fillTable(){
 
 function makeCharts(){
   let sc={normal:0,high:0,low:0,borderline:0};
-  data.forEach(d=>sc[d.st]++);
+  extractedData.forEach(d=>sc[d.st]++);
   let pc=document.getElementById('pie').getContext('2d');
   pieC=new Chart(pc,{type:'doughnut',data:{labels:['طبيعي','مرتفع','منخفض','حدود'],datasets:[{data:[sc.normal,sc.high,sc.low,sc.borderline],backgroundColor:['rgba(60,179,113,0.8)','rgba(231,76,60,0.8)','rgba(52,152,219,0.8)','rgba(243,156,18,0.8)'],borderColor:['#3cb371','#e74c3c','#3498db','#f39c12'],borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#E8BCB9',font:{family:'Noto Kufi Arabic',size:10},boxWidth:12}}}});
   
   let bc=document.getElementById('bar').getContext('2d');
-  let lbls=data.map(d=>d.ind), vals=data.map(d=>d.val);
-  let mins=data.map(d=>{let p=d.norm.split('-'); return parseFloat(p[0].replace('<','').trim());});
-  let maxs=data.map(d=>{let p=d.norm.split('-'); return p.length>1?parseFloat(p[1].trim()):parseFloat(p[0].replace('<','').trim())*1.5;});
+  let lbls=extractedData.map(d=>d.ind), vals=extractedData.map(d=>d.val);
+  let mins=extractedData.map(d=>{let p=d.norm.split('-'); return parseFloat(p[0].replace('<','').trim()) || 0;});
+  let maxs=extractedData.map(d=>{
+    let p=d.norm.split('-'); 
+    if(p.length>1) return parseFloat(p[1].trim());
+    return parseFloat(p[0].replace('<','').trim())*1.5 || 100;
+  });
   barC=new Chart(bc,{type:'bar',data:{labels:lbls,datasets:[{label:'النتيجة',data:vals,backgroundColor:'rgba(243,159,90,0.8)',borderColor:'#F39F5A',borderWidth:2},{label:'الحد الأدنى',data:mins,backgroundColor:'rgba(60,179,113,0.4)',borderColor:'#3cb371',borderWidth:1},{label:'الحد الأعلى',data:maxs,backgroundColor:'rgba(231,76,60,0.4)',borderColor:'#e74c3c',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#E8BCB9',font:{family:'Noto Kufi Arabic',size:9},boxWidth:10}}},scales:{y:{ticks:{color:'#E8BCB9',font:{family:'Noto Kufi Arabic',size:8}},grid:{color:'rgba(232,188,185,0.08)'}},x:{ticks:{color:'#E8BCB9',font:{family:'Noto Kufi Arabic',size:7}},grid:{color:'rgba(232,188,185,0.08)'}}}});
 }
 
 function fillAdvice(){
   let g=document.getElementById('adviceGrid'); g.innerHTML='';
-  advice.forEach(a=>{let c=document.createElement('div'); c.className='advice-card'; c.innerHTML=`<h4>${a.t}</h4><p>${a.c}</p>`; g.appendChild(c);});
+  generalAdvice.forEach(a=>{let c=document.createElement('div'); c.className='advice-card'; c.innerHTML=`<h4>${a.t}</h4><p>${a.c}</p>`; g.appendChild(c);});
 }
 
 function fillDisease(){
   let b=document.getElementById('diseaseBox'); b.innerHTML='';
+  const diseases = getDiseases(extractedData);
   diseases.forEach(d=>{let c=document.createElement('div'); c.className='disease-card'; c.innerHTML=`<h4>${d.t}</h4><p>${d.c}</p>`; b.appendChild(c);});
 }
 
 function fillDetailed(){
   let b=document.getElementById('detailedBox'); b.innerHTML='';
-  data.forEach(d=>{
+  extractedData.forEach(d=>{
     let col=''; switch(d.st){case'normal':col='#3cb371';break; case'high':col='#e74c3c';break; case'low':col='#3498db';break; case'borderline':col='#f39c12';break;}
     let div=document.createElement('div'); div.className='an-item';
     div.innerHTML=`<h4>${d.ind}</h4><div class="val" style="color:${col}">${d.val} ${d.unit} <span style="font-size:0.7rem;opacity:0.6">(طبيعي: ${d.norm})</span></div><div class="exp">${d.exp}</div><div class="an-box disease-box"><strong><i class="fas fa-user-md"></i>الأمراض:</strong><p>${d.dis}</p></div><div class="an-box advice-box"><strong><i class="fas fa-apple-alt"></i>النصائح:</strong><p>${d.adv}</p></div><div class="ref"><i class="fas fa-book-medical"></i> ${d.ref}</div>`;
@@ -428,3 +678,4 @@ function fillDetailed(){
 </script>
 </body>
 </html>
+
